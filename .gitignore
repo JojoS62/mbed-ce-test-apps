@@ -37,3 +37,6 @@ build/
 
 # Mac stuff
 .DS_Store
+.vscode/vscode_info.json
+.vscode/debug_info.json
+.vscode/launch.json
