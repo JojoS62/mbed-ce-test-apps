@@ -2,11 +2,11 @@
     "configurations": [
 	{
 	    "type": "cortex-debug",
-	    "name": "Connect to GDB HelloWorld NUCLEO_F746ZG Develop",
-	    "executable": "D:/Projects/Sn/LocalGit/Mbed-CE/mbed-ce-hello-world/build/HelloWorld.elf",
+	    "name": "Connect to GDB HelloWorld NUCLEO_G071RB Debug",
+	    "executable": "/home/jojo/projects/mbed-ce-hello-world/build/NUCLEO_G071RB_STM32CUBE-Debug/HelloWorld.elf",
 	    "cwd": "${workspaceRoot}",
-	    "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
-		"objdumpPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-objdump.exe",
+	    "gdbPath": "/opt/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/bin/arm-none-eabi-gdb",
+		"objdumpPath": "/opt/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/bin/arm-none-eabi-objdump",
 		"servertype": "external",
 		"gdbTarget": "localhost:23331",
 		"request": "attach"
