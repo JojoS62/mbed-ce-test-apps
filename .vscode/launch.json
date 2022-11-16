@@ -1,0 +1,15 @@
+{
+    "configurations": [
+	{
+	    "type": "cortex-debug",
+	    "name": "Connect to GDB HelloWorld NUCLEO_F746ZG Develop",
+	    "executable": "D:/Projects/Sn/LocalGit/Mbed-CE/mbed-ce-hello-world/build/HelloWorld.elf",
+	    "cwd": "${workspaceRoot}",
+	    "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
+		"objdumpPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-objdump.exe",
+		"servertype": "external",
+		"gdbTarget": "localhost:23331",
+		"request": "attach"
+	},
+    ]
+}

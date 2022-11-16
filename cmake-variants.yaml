@@ -1,0 +1,28 @@
+buildType:
+  default: Develop
+  choices:
+    Develop:
+      short: Develop
+      long: Emit debug information but also optimize
+      buildType: Develop
+    Debug:
+      short: Debug
+      long: Emit debug information and don't optimize
+      buildType: Debug
+    Release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+board:
+  default: NUCLEO_F746ZG_JLINK
+  choices:
+    NUCLEO_F746ZG_JLINK:
+      short: NUCLEO_F746ZG JLink
+      settings:
+        MBED_TARGET: NUCLEO_F746ZG
+        UPLOAD_METHOD: JLINK    
+    NUCLEO_F746ZG_STM32CUBE:
+      short: NUCLEO_F746ZG STM32CUBE
+      settings:
+        MBED_TARGET: NUCLEO_F746ZG
+        UPLOAD_METHOD: STM32CUBE
