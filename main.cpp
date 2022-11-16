@@ -1,6 +1,18 @@
 #include "mbed.h"
 
-DigitalOut led(LED1);
+Thread thread;
+Thread thread_events;
+EventQueue queue;
+InterruptIn user_button(BUTTON1);
+
+void thread_fn() {
+	DigitalOut led(LED1);
+
+	while(1) {
+		led = !led;
+		ThisThread::sleep_for(100ms);
+	}
+}
 
 int main()
 {
