@@ -21,6 +21,7 @@ int main()
 
 	user_button.rise( []() {
 		queue.call(printf, "ping\n");
+		queue.call_in(2s, printf, "pong\n");
 	});
 
 	int counter = 0;

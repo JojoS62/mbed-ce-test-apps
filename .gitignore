@@ -40,3 +40,4 @@ build/
 .vscode/vscode_info.json
 .vscode/debug_info.json
 .vscode/launch.json
+.vscode/.cortex-debug.registers.state.json
