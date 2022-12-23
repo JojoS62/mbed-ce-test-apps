@@ -2,3 +2,6 @@
 	path = mbed-os
 	url = https://github.com/mbed-ce/mbed-os.git
 	shallow = true
+[submodule "custom_targets"]
+	path = custom_targets
+	url = https://github.com/JojoS62/custom_targets.git
