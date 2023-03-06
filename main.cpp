@@ -10,12 +10,17 @@ void thread_fn() {
 
 	while(1) {
 		led = !led;
-		ThisThread::sleep_for(100ms);
+		ThisThread::sleep_for(500ms);
 	}
 }
 
 int main()
 {
+    printf("mbed-ce hello-world\n");
+    printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
+    printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
+
+
 	thread.start(thread_fn);
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));
 
