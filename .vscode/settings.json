@@ -1,4 +1,5 @@
 {
+    "cmake.buildDirectory": "${workspaceFolder}/build/${variant:board}-${variant:buildType}",
     "files.associations": {
         "*.cpp": "cpp",
         "*.htm": "html",
