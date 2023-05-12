@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**"
             ],
+            "compilerPath": "",
             "intelliSenseMode": "${default}",
             "cStandard": "c17",
             "cppStandard": "c++17",
