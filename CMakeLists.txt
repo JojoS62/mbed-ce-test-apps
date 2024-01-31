@@ -6,8 +6,13 @@ cmake_policy(VERSION 3.19)
 
 # Initialize Mbed OS build system. 
 # Note: This block must be before the project() call.
+set(STM32CUBE_UPLOAD_ENABLED TRUE)
+set(STM32CUBE_CONNECT_COMMAND "-c port=SWD reset=HWrst")
+set(STM32CUBE_GDBSERVER_ARGS "--swd")
+
+
 set(MBED_APP_JSON_PATH mbed_app.json)
-set(STM32CUBE_UPLOAD_ENABLED  TRUE)
+set(CUSTOM_TARGETS_JSON_PATH custom_targets/custom_targets.json) # This activates the custom targets in custom_targets.json
 
 include(mbed-os/tools/cmake/app.cmake) # Load Mbed CE toolchain file and basic build system
 
