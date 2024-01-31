@@ -4,17 +4,17 @@
 	// Debug launch for target HelloWorld.
 	{
 	    "type": "cortex-debug",
-	    "name": "Debug HelloWorld NUCLEO_H743ZI2 Develop",
-	    "executable": "C:/LocalGit/Mbed-CE/mbed-ce-hello-world/build/HelloWorld.elf",
+	    "name": "Debug HelloWorld JZ_F407VE Debug",
+	    "executable": "/home/jojo/projects/mbed-ce-hello-world/build/JZ_F407VE_STM32CUBE-Debug/HelloWorld.elf",
 	    "cwd": "${workspaceRoot}",
-	    "gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/11.3 rel1/bin/arm-none-eabi-gdb.exe",
-		"objdumpPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/11.3 rel1/bin/arm-none-eabi-objdump.exe",
+	    "gdbPath": "/opt/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gdb",
+		"objdumpPath": "/opt/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-objdump",
 		"servertype": "external",
-		"gdbTarget": "localhost:23331",
+		"gdbTarget": "127.0.0.1:23331",
 		"request": "launch",
 		"preLaunchTask": "Build HelloWorld and start GDB server",
 		// Override the command sequences used by VS Code to be correct for this GDB server
-		"overrideLaunchCommands": ["monitor reset", "load", "break main", "monitor reset"],
+		"overrideLaunchCommands": ["monitor reset", "load", "tbreak main", "monitor reset"],
 		"overrideRestartCommands": ["monitor reset"],
 	},
     ]

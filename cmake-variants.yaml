@@ -28,3 +28,8 @@ board:
       settings:
         MBED_TARGET: NUCLEO_H743ZI2
         UPLOAD_METHOD: STM32CUBE
+    JZ_F407VE_STM32CUBE:
+      short: JZ_F407VE STM32CUBE
+      settings:
+        MBED_TARGET: JZ_F407VE
+        UPLOAD_METHOD: STM32CUBE
