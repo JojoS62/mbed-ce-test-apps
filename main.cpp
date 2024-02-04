@@ -1,10 +1,13 @@
 #include "mbed.h"
+#include "modbus_slave.h"
 
 Thread thread;
 Thread thread_events;
 EventQueue queue;
 InterruptIn user_button(BUTTON1);
 DigitalOut led2(LED2);
+DigitalOut led3(LED3);
+
 
 void thread_fn() {
 	DigitalOut led(LED1);
@@ -17,7 +20,7 @@ void thread_fn() {
 
 int main()
 {
-    printf("mbed-ce hello-world\n");
+    printf("mbed-ce modbus-slave\n");
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
@@ -38,14 +41,28 @@ int main()
 		led2 = !led2;
 	});
 
-	// main loop, print message with counter
-	int counter = 0;
+	// Enable the Modbus Protocol Stack.
+    eMBErrorCode    eStatus;
+
+	eStatus = eMBInit(MB_RTU, SLAVE_ID, DUMMY_PORT, 115200, MB_PAR_EVEN);
+	eStatus = eMBEnable();
+
+	    // Initialise some registers
+    usRegInputBuf[1] = 0x1234;
+    usRegInputBuf[2] = 0x5678;
+    usRegInputBuf[3] = 0x9abc;        
+
 	while(true) 
 	{
-		printf("Hello world from Mbed CE! %d\n", counter);
-		ThisThread::sleep_for(1s);
-		counter++;
+		// Call the main polling loop of the Modbus protocol stack.
+		eStatus = eMBPoll();
+ 
+       // Here we simply count the number of poll cycles.
+        usRegInputBuf[0]++;
+ 
+		//ThisThread::sleep_for(100ms);
 	}
+
 
 	return 0;
 }
