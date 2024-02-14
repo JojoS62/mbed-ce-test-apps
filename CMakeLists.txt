@@ -27,5 +27,6 @@ add_subdirectory(mbed-modbus)
 
 add_subdirectory(app_Modbus EXCLUDE_FROM_ALL)
 add_subdirectory(app_Hello EXCLUDE_FROM_ALL)
+add_subdirectory(app_Ethernet EXCLUDE_FROM_ALL)
 
 mbed_finalize_build()

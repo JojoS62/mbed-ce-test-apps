@@ -4,5 +4,6 @@
         "*.cpp": "cpp",
         "*.htm": "html",
         "*.html": "html"
-    }
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

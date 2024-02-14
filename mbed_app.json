@@ -2,7 +2,9 @@
     "target_overrides": {
         "*": {
             "platform.stdio-baud-rate": 115200,
-            "platform.stdio-buffered-serial": 1
+            "platform.stdio-buffered-serial": 1,
+            "mbed-trace.enable": 1,
+            "stm32-emac.eth-phy-address" : 1       
         }
     }
 }
