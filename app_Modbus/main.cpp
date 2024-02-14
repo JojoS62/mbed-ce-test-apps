@@ -25,11 +25,6 @@ int main()
 	eStatus = eMBInit(MB_RTU, SLAVE_ID, DUMMY_PORT, 115200, MB_PAR_EVEN);
 	eStatus = eMBEnable();
 
-	    // Initialise some registers
-    usRegInputBuf[1] = 0x1234;
-    usRegInputBuf[2] = 0x5678;
-    usRegInputBuf[3] = 0x9abc;        
-
 	while(true) 
 	{
 		// Call the main polling loop of the Modbus protocol stack.

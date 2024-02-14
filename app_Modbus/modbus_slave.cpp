@@ -4,8 +4,8 @@
  
 /* ----------------------- Static variables ---------------------------------*/
 USHORT   usRegInputStart = REG_INPUT_START;
-USHORT   usRegInputBuf[REG_INPUT_NREGS];
- 
+USHORT   usRegInputBuf[REG_INPUT_NREGS] = {	0x0099, 0x0100, 0x0101, 0x0102 }; 
+
 /* ----------------------- Start implementation -----------------------------*/
 eMBErrorCode eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs )
 {
