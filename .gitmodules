@@ -6,6 +6,6 @@
 	path = custom_targets
 	url = https://github.com/JojoS62/custom_targets.git
 [submodule "mbed-modbus"]
-	path = mbed_libs/mbed-modbus
+	path = mbed-modbus
 	url = https://github.com/JojoS62/mbed-modbus.git
 	
