@@ -22,7 +22,7 @@ project(HelloWorld)
 
 add_subdirectory(custom_targets)
 add_subdirectory(mbed-os) # Load Mbed OS build targets.  Must be added before any other subdirectories
-add_subdirectory(mbed_libs)
+add_subdirectory(mbed-libs)
 
 
 add_subdirectory(app_Modbus EXCLUDE_FROM_ALL)
