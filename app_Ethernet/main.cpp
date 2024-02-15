@@ -1,5 +1,7 @@
 #include "mbed.h"
 #include "mbed-trace/mbed_trace.h"
+#include "network.h"
+#include "mqtt.h"
 
 Thread thread;
 Thread thread_events;
@@ -29,23 +31,9 @@ int main()
 		led2 = !led2;
 	});
 
-    NetworkInterface* network = NetworkInterface::get_default_instance();
-    if (!network) {
-        printf("Cannot connect to the network, see serial output\n");
-        return 1;
-    } 
-    nsapi_error_t connect_status = network->connect();
-
-    if (connect_status != NSAPI_ERROR_OK) {
-        printf("Failed to connect to network (%d)\n", connect_status);
-        return 2;
-    } else {
-        SocketAddress socketAddress;
-        network->get_ip_address(&socketAddress);
-        printf("my IP is %s\n", socketAddress.get_ip_address());     
-    }
- 
-
+	network_init();
+    mqtt_init();
+	
 	// main loop, print message with counter
 	int counter = 0;
 	while(true) 
