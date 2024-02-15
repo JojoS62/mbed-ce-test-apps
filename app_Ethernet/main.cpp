@@ -31,9 +31,11 @@ int main()
 		led2 = !led2;
 	});
 
-	network_init();
-    mqtt_init();
-	
+	nsapi_error_t connect_status =  network_init();
+	if (connect_status == NSAPI_ERROR_OK) {
+		mqtt_init();
+	}
+    
 	// main loop, print message with counter
 	int counter = 0;
 	while(true) 

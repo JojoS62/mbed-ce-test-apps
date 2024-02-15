@@ -4,4 +4,4 @@
 
 extern NetworkInterface* network;
 
-void network_init();
+nsapi_error_t network_init();
