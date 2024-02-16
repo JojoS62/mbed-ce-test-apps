@@ -11,3 +11,6 @@
 [submodule "mbed-libs/mbed-mqtt"]
 	path = mbed-libs/mbed-mqtt
 	url = https://github.com/JojoS62/mbed-mqtt.git
+[submodule "mbed-libs/Adafruit-Fingerprint-Sensor-Library"]
+	path = mbed-libs/Adafruit-Fingerprint-Sensor-Library
+	url = https://github.com/JojoS62/Adafruit-Fingerprint-Sensor-Library.git
