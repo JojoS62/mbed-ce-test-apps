@@ -7,7 +7,11 @@ EventQueue queue;
 InterruptIn user_button(BUTTON1);
 DigitalOut led2(LED2);
 BufferedSerial	comR503(PC_6, PC_7, 57600);
+
 Adafruit_Fingerprint finger(&comR503);
+InterruptIn wakeupFP(PA_0);
+
+typedef void (*fptr)();
 
 int main()
 {
@@ -18,10 +22,18 @@ int main()
 	// start a thread with queue dispatcher
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));
 
-	// add interrupt callback for button1, write messages to serial
-	user_button.rise( []() {
-		queue.call(printf, "ping\n");
-		queue.call_in(2s, printf, "pong\n");
+
+	// fingerprint detect action
+	wakeupFP.fall( []() {
+		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
+			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
+	});
+
+
+	// fingerprint release action
+	wakeupFP.rise( []() {
+		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
+			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
 	});
 
 	// add a cyclic function call to queue
@@ -36,7 +48,7 @@ int main()
 	printf("Sys ID  : 0x%0x\n",finger.system_id);
 	printf("Capacity: %0d\n", finger.capacity);
     printf("Security level: %d\n", finger.security_level);
-    printf("Device address: 0x%0x\n", finger.device_addr);
+    printf("Device address: %ld\n", finger.device_addr);
     printf("Packet len: %d\n", finger.packet_len);
     printf("Baud rate: %d\n", finger.baud_rate);
 
@@ -46,23 +58,23 @@ int main()
 	{
 		counter++;
 
-		// LED fully on
-		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
-		ThisThread::sleep_for(250ms);
-		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE);
-		ThisThread::sleep_for(250ms);
-		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_PURPLE);
-		ThisThread::sleep_for(250ms);
+		// // LED fully on
+		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
+		// ThisThread::sleep_for(250ms);
+		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE);
+		// ThisThread::sleep_for(250ms);
+		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_PURPLE);
+		// ThisThread::sleep_for(250ms);
 
-		// flash red LED
-		finger.LEDcontrol(FINGERPRINT_LED_FLASHING, 25, FINGERPRINT_LED_RED, 10);
-		ThisThread::sleep_for(2s);
-		// Breathe blue LED till we say to stop
-		finger.LEDcontrol(FINGERPRINT_LED_BREATHING, 100, FINGERPRINT_LED_BLUE);
-		ThisThread::sleep_for(3s);
-		finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_ON, 200, FINGERPRINT_LED_PURPLE);
-		ThisThread::sleep_for(2s);
-		finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_OFF, 200, FINGERPRINT_LED_PURPLE);
+		// // flash red LED
+		// finger.LEDcontrol(FINGERPRINT_LED_FLASHING, 25, FINGERPRINT_LED_RED, 10);
+		// ThisThread::sleep_for(2s);
+		// // Breathe blue LED till we say to stop
+		// finger.LEDcontrol(FINGERPRINT_LED_BREATHING, 100, FINGERPRINT_LED_BLUE);
+		// ThisThread::sleep_for(3s);
+		// finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_ON, 200, FINGERPRINT_LED_PURPLE);
+		// ThisThread::sleep_for(2s);
+		// finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_OFF, 200, FINGERPRINT_LED_PURPLE);
 		ThisThread::sleep_for(2s);
 
 	}
