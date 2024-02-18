@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include "Adafruit_Fingerprint.h"
+#include "storage.h"
 
 Thread thread;
 Thread thread_events;
@@ -11,18 +12,29 @@ BufferedSerial	comR503(PC_6, PC_7, 57600);
 Adafruit_Fingerprint finger(&comR503);
 InterruptIn wakeupFP(PA_0);
 
-typedef void (*fptr)();
+void getImage() {
+	uint8_t fp_result = finger.getImage();
+	fp_result = finger.uploadImage();
+}
 
 int main()
 {
-    printf("mbed-ce Test Fingerprintsensor R503\n");
+    printf("Mbed-CE Test Fingerprintsensor R503\n");
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
+
+    print_dir(&fs, "/");
+    printf("\n"); 
 
 	// start a thread with queue dispatcher
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));
 
 
+	user_button.fall([]() {
+		queue.call(&getImage);
+	});
+
+#if 0
 	// fingerprint detect action
 	wakeupFP.fall( []() {
 		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
@@ -35,6 +47,7 @@ int main()
 		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
 			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
 	});
+#endif
 
 	// add a cyclic function call to queue
 	queue.call_every(200ms, []() {

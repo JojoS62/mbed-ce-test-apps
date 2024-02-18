@@ -14,3 +14,6 @@
 [submodule "mbed-libs/Adafruit-Fingerprint-Sensor-Library"]
 	path = mbed-libs/Adafruit-Fingerprint-Sensor-Library
 	url = https://github.com/JojoS62/Adafruit-Fingerprint-Sensor-Library.git
+[submodule "mbed-libs/mbed-sdio"]
+	path = mbed-libs/mbed-sdio
+	url = https://github.com/JojoS62/COMPONENT_SDIO.git

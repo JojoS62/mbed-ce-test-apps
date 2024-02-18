@@ -3,7 +3,8 @@
     "files.associations": {
         "*.cpp": "cpp",
         "*.htm": "html",
-        "*.html": "html"
+        "*.html": "html",
+        "cstdint": "cpp"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "vsmqtt.brokerProfiles": [
