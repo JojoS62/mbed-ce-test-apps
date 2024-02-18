@@ -1,6 +1,13 @@
 #include "mbed.h"
 #include "Adafruit_Fingerprint.h"
 #include "storage.h"
+#include "network.h"
+#include "HttpServer.h"
+#include "HttpResponseBuilder.h"
+#include "WebsocketHandlers.h"
+#include "HTTPHandlers.h" 
+
+#define USE_HTTPSERVER
 
 Thread thread;
 Thread thread_events;
@@ -64,6 +71,37 @@ int main()
     printf("Device address: %ld\n", finger.device_addr);
     printf("Packet len: %d\n", finger.packet_len);
     printf("Baud rate: %d\n", finger.baud_rate);
+
+	nsapi_error_t connect_status =  network_init();
+	if (connect_status != NSAPI_ERROR_OK) {
+		while(1) {
+			led2 = !led2;
+			ThisThread::sleep_for(50ms);
+		}
+	}
+    
+#ifdef USE_HTTPSERVER	
+    HttpServer server(network, 5, 4);               // max 5 threads, 4 websockets
+
+    server.addStandardHeader("Server", "JojoS_Mbed_Server");
+    server.addStandardHeader("DNT", "1");
+
+    server.setHTTPHandler("/", &request_handler);
+    server.setHTTPHandler("/stats/", &request_handler_getStatus);
+    
+    server.setWSHandler("/ws/", WSHandler::createHandler);
+
+    nsapi_error_t res = server.start(8080);
+
+    if (res == NSAPI_ERROR_OK) {
+        SocketAddress socketAddress;
+        network->get_ip_address(&socketAddress);
+        printf("Server is listening at http://%s:8080\n", socketAddress.get_ip_address());
+    }
+    else {
+        printf("Server could not be started... %d\n", res);
+    }
+#endif 
 
 	// main loop, print message with counter
 	int counter = 0;

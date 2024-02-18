@@ -17,3 +17,6 @@
 [submodule "mbed-libs/mbed-sdio"]
 	path = mbed-libs/mbed-sdio
 	url = https://github.com/JojoS62/COMPONENT_SDIO.git
+[submodule "mbed-libs/mbed-http-server"]
+	path = mbed-libs/mbed-http-server
+	url = https://github.com/JojoS62/mbed-http-server.git
