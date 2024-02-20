@@ -13,6 +13,7 @@ target_link_libraries(Fingerprint
     mbed-storage-sdio
     mbed-storage
     mbed-http-server
+    mbed-tftpd 
     )
 
 mbed_set_post_build(Fingerprint)

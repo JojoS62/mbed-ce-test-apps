@@ -4,7 +4,13 @@
         "*.cpp": "cpp",
         "*.htm": "html",
         "*.html": "html",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "mstd_atomic": "cpp",
+        "mstd_iterator": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "span": "cpp"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "vsmqtt.brokerProfiles": [

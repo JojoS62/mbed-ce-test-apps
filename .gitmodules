@@ -20,3 +20,6 @@
 [submodule "mbed-libs/mbed-http-server"]
 	path = mbed-libs/mbed-http-server
 	url = https://github.com/JojoS62/mbed-http-server.git
+[submodule "mbed-libs/mbed-tftpd"]
+	path = mbed-libs/mbed-tftpd
+	url = https://github.com/JojoS62/TFTPServer.git

@@ -6,11 +6,13 @@
 #include "HttpResponseBuilder.h"
 #include "WebsocketHandlers.h"
 #include "HTTPHandlers.h" 
+#include "threadTFTPServer.h"
 
 #define USE_HTTPSERVER
 
-Thread thread;
-Thread thread_events;
+Thread thread_events(osPriorityAboveNormal1, 4*1024UL, nullptr, "eventThread");
+ThreadTFTPServer  threadTFTPpServer; 
+
 EventQueue queue;
 InterruptIn user_button(BUTTON1);
 DigitalOut led2(LED2);
@@ -19,9 +21,91 @@ BufferedSerial	comR503(PC_6, PC_7, 57600);
 Adafruit_Fingerprint finger(&comR503);
 InterruptIn wakeupFP(PA_0);
 
+// bitmap stuff
+#pragma pack(push, 2)
+typedef struct tagBITMAPFILEHEADER {
+  uint16_t  bfType;
+  uint32_t bfSize;
+  uint16_t  bfReserved1;
+  uint16_t  bfReserved2;
+  uint32_t bfOffBits;
+} BITMAPFILEHEADER;
+
+typedef struct tagBITMAPINFOHEADER {
+  uint32_t biSize;
+  int32_t  biWidth;
+  int32_t  biHeight;
+  uint16_t  biPlanes;
+  uint16_t  biBitCount;
+  uint32_t biCompression;
+  uint32_t biSizeImage;
+  int32_t  biXPelsPerMeter;
+  int32_t  biYPelsPerMeter;
+  uint32_t biClrUsed;
+  uint32_t biClrImportant;
+} BITMAPINFOHEADER;
+#pragma pack(pop)
+
+BITMAPFILEHEADER bmpHeader;
+BITMAPINFOHEADER bmpInfo;
+uint32_t colorTab[256];
+uint8_t imageBuffer[18720];
+
+
 void getImage() {
 	uint8_t fp_result = finger.getImage();
-	fp_result = finger.uploadImage();
+	printf("genImage result: 0x%0x\n", fp_result);
+
+	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, 0x01);
+
+	fp_result = finger.uploadImage(imageBuffer);
+	printf("uploadImage result: 0x%0x\n block count: %d\n", fp_result, finger.packetCount);
+
+	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, 0x01);
+
+	bmpHeader.bfType = 0x4d42; // magic number "BM"
+	bmpHeader.bfOffBits = sizeof(bmpHeader) + sizeof(bmpInfo) + 256*4;
+	bmpHeader.bfSize = 0; // bmpHeader.bfOffBits + 192*192;
+
+	bmpInfo.biSize = sizeof(bmpInfo);
+	bmpInfo.biWidth = 192;
+	bmpInfo.biHeight = -192;
+	bmpInfo.biPlanes = 1;
+	bmpInfo.biBitCount = 8;
+	bmpInfo.biCompression = 0;
+	bmpInfo.biSizeImage = 192 * 192 * 1;
+	bmpInfo.biXPelsPerMeter = 20000;		// 508 DPI
+	bmpInfo.biYPelsPerMeter = 20000;		// 508 DPI
+	bmpInfo.biClrUsed = 0;					// max. no. of colors
+	bmpInfo.biClrImportant = 0;				// all colors used
+
+
+	File imageFile(&fs, "R503-Image.bmp", O_RDWR | O_CREAT);
+	// headers
+	imageFile.write(&bmpHeader, sizeof(bmpHeader));
+	imageFile.write(&bmpInfo, sizeof(bmpInfo));
+
+	// colortable
+	uint32_t colorItem = 0;
+	for(int i=0; i<256; i++) {
+		colorTab[i] = colorItem;
+		colorItem += 0x00010101;
+	}
+	imageFile.write(&colorTab, sizeof(colorTab));
+
+	// image data 4 Bit -> 8 Bit
+	for(int y=0; y < 192; y++) {
+		for(int x=0; x < 192; x++) {
+			uint8_t val;
+			val = (imageBuffer[x + y*192] & 0xf) * 8;
+			imageFile.write(&val, sizeof(val));
+
+			val = (imageBuffer[x + y*192] >> 4) * 8;
+			imageFile.write(&val, sizeof(val));
+		}
+	}
+	
+	imageFile.close();
 }
 
 int main()
@@ -30,31 +114,26 @@ int main()
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
-    print_dir(&fs, "/");
-    printf("\n"); 
+    // print_dir(&fs, "/");
+    // printf("\n"); 
 
 	// start a thread with queue dispatcher
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));
 
 
-	user_button.fall([]() {
-		queue.call(&getImage);
-	});
-
-#if 0
 	// fingerprint detect action
 	wakeupFP.fall( []() {
 		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
-			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
+			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)0x04, (uint8_t)0);
+		queue.call_in(100ms, &getImage);
 	});
 
 
 	// fingerprint release action
-	wakeupFP.rise( []() {
-		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
-			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
-	});
-#endif
+	// wakeupFP.rise( []() {
+	// 	// queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
+	// 	// 	(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
+	// });
 
 	// add a cyclic function call to queue
 	queue.call_every(200ms, []() {
@@ -63,6 +142,7 @@ int main()
 
 	finger.begin(57600);
 	finger.getParameters();
+	finger.LEDcontrol((uint8_t)FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_BLUE);
 
 	printf("Status  : 0x%0x\n", finger.status_reg);
 	printf("Sys ID  : 0x%0x\n",finger.system_id);
@@ -70,8 +150,22 @@ int main()
     printf("Security level: %d\n", finger.security_level);
     printf("Device address: %ld\n", finger.device_addr);
     printf("Packet len: %d\n", finger.packet_len);
-    printf("Baud rate: %d\n", finger.baud_rate);
+    printf("Baud rate: %d\n\n", finger.baud_rate);
 
+	ProductInfo pi;
+	finger.readProductInfo(pi);
+
+	printf("Module Type: %s\n", pi.module_type);
+	printf("Hardware Version: %02d.%02d\n", pi.hardware_version[0], pi.hardware_version[1]);
+	printf("Module Batch Number: %.4s\n", pi.module_batch_number);
+	printf("Module Serial Number: %.8s\n", pi.module_serial_number);
+	printf("Database size: %d\n", pi.database_size);
+	printf("Template size: %d\n", pi.template_size);
+	printf("Sensor Type: %.8s\n", pi.sensor_type);
+	printf("Sensor width/height : %d %d\n", pi.sensor_width, pi.sensor_height);
+
+    
+#ifdef USE_HTTPSERVER	
 	nsapi_error_t connect_status =  network_init();
 	if (connect_status != NSAPI_ERROR_OK) {
 		while(1) {
@@ -79,9 +173,8 @@ int main()
 			ThisThread::sleep_for(50ms);
 		}
 	}
-    
-#ifdef USE_HTTPSERVER	
-    HttpServer server(network, 5, 4);               // max 5 threads, 4 websockets
+
+    HttpServer server(network, 3, 2);               // max 3 threads, 2 websockets
 
     server.addStandardHeader("Server", "JojoS_Mbed_Server");
     server.addStandardHeader("DNT", "1");
@@ -101,6 +194,8 @@ int main()
     else {
         printf("Server could not be started... %d\n", res);
     }
+
+    threadTFTPpServer.start(network); 
 #endif 
 
 	// main loop, print message with counter
