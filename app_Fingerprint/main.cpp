@@ -50,6 +50,7 @@ BITMAPFILEHEADER bmpHeader;
 BITMAPINFOHEADER bmpInfo;
 uint32_t colorTab[256];
 uint8_t imageBuffer[18720];
+uint8_t twoLineBuffer[2*192];
 
 
 void getImage() {
@@ -64,18 +65,18 @@ void getImage() {
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, 0x01);
 
 	bmpHeader.bfType = 0x4d42; // magic number "BM"
-	bmpHeader.bfOffBits = sizeof(bmpHeader) + sizeof(bmpInfo) + 256*4;
+	bmpHeader.bfOffBits = sizeof(bmpHeader) + sizeof(bmpInfo) + sizeof(colorTab);
 	bmpHeader.bfSize = 0; // bmpHeader.bfOffBits + 192*192;
 
 	bmpInfo.biSize = sizeof(bmpInfo);
 	bmpInfo.biWidth = 192;
-	bmpInfo.biHeight = -192;
+	bmpInfo.biHeight = 192;
 	bmpInfo.biPlanes = 1;
 	bmpInfo.biBitCount = 8;
 	bmpInfo.biCompression = 0;
-	bmpInfo.biSizeImage = 192 * 192 * 1;
-	bmpInfo.biXPelsPerMeter = 20000;		// 508 DPI
-	bmpInfo.biYPelsPerMeter = 20000;		// 508 DPI
+	bmpInfo.biSizeImage = 0; // 192 * 192 * 1;
+	bmpInfo.biXPelsPerMeter = 0; // 20000;		// 508 DPI
+	bmpInfo.biYPelsPerMeter = 0; // 20000;		// 508 DPI
 	bmpInfo.biClrUsed = 0;					// max. no. of colors
 	bmpInfo.biClrImportant = 0;				// all colors used
 
@@ -91,20 +92,19 @@ void getImage() {
 		colorTab[i] = colorItem;
 		colorItem += 0x00010101;
 	}
-	imageFile.write(&colorTab, sizeof(colorTab));
+	imageFile.write(colorTab, sizeof(colorTab));
 
 	// image data 4 Bit -> 8 Bit
-	for(int y=0; y < 192; y++) {
+	for(int y=0; y < 192/2; y++) {
 		for(int x=0; x < 192; x++) {
-			uint8_t val;
-			val = (imageBuffer[x + y*192] & 0xf) * 8;
-			imageFile.write(&val, sizeof(val));
-
-			val = (imageBuffer[x + y*192] >> 4) * 8;
-			imageFile.write(&val, sizeof(val));
+			uint8_t val1 = (imageBuffer[x + y*192] >> 4) * 16;
+			uint8_t val2 = (imageBuffer[x + y*192] & 0xf) * 16;
+			twoLineBuffer[x] = val1;
+			twoLineBuffer[x + 192] = val2;
 		}
+		imageFile.write(twoLineBuffer, sizeof(twoLineBuffer));
 	}
-	
+
 	imageFile.close();
 }
 
