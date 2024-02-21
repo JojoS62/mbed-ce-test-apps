@@ -49,8 +49,8 @@ typedef struct tagBITMAPINFOHEADER {
 BITMAPFILEHEADER bmpHeader;
 BITMAPINFOHEADER bmpInfo;
 uint32_t colorTab[256];
-uint8_t imageBuffer[18720];
-uint8_t twoLineBuffer[2*192];
+uint8_t imageBuffer[18432];
+uint8_t lineBuffer[192];
 
 
 void getImage() {
@@ -59,7 +59,7 @@ void getImage() {
 
 	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, 0x01);
 
-	fp_result = finger.uploadImage(imageBuffer);
+	fp_result = finger.uploadImage(imageBuffer, sizeof(imageBuffer));
 	printf("uploadImage result: 0x%0x\n block count: %d\n", fp_result, finger.packetCount);
 
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, 0x01);
@@ -87,22 +87,22 @@ void getImage() {
 	imageFile.write(&bmpInfo, sizeof(bmpInfo));
 
 	// colortable
-	uint32_t colorItem = 0;
+	uint32_t colorItem = 0x0ff000000UL;
 	for(int i=0; i<256; i++) {
 		colorTab[i] = colorItem;
-		colorItem += 0x00010101;
+		colorItem += 0x00010101UL;
 	}
 	imageFile.write(colorTab, sizeof(colorTab));
 
 	// image data 4 Bit -> 8 Bit
-	for(int y=0; y < 192/2; y++) {
-		for(int x=0; x < 192; x++) {
-			uint8_t val1 = (imageBuffer[x + y*192] >> 4) * 16;
-			uint8_t val2 = (imageBuffer[x + y*192] & 0xf) * 16;
-			twoLineBuffer[x] = val1;
-			twoLineBuffer[x + 192] = val2;
+	for(int y=0; y < 192; y++) {
+		for(int x=0; x < 192/2; x++) {
+			uint8_t val1 = (imageBuffer[x + y*96] >> 4) * 16;
+			uint8_t val2 = (imageBuffer[x + y*96] & 0xf) * 16;
+			lineBuffer[2*x] = val1;
+			lineBuffer[2*x + 1] = val2;
 		}
-		imageFile.write(twoLineBuffer, sizeof(twoLineBuffer));
+		imageFile.write(lineBuffer, sizeof(lineBuffer));
 	}
 
 	imageFile.close();
@@ -125,7 +125,7 @@ int main()
 	wakeupFP.fall( []() {
 		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
 			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)0x04, (uint8_t)0);
-		queue.call_in(100ms, &getImage);
+		queue.call_in(50ms, &getImage);
 	});
 
 
