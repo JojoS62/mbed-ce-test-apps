@@ -57,12 +57,18 @@ void getImage() {
 	uint8_t fp_result = finger.getImage();
 	printf("genImage result: 0x%0x\n", fp_result);
 
-	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, 0x01);
+	if (fp_result != FINGERPRINT_OK) {
+		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
+		queue.call_in(1s, &finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
+			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_RED, (uint8_t)0);
+		return;
+	}	
+
+	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_GREEN);
 
 	fp_result = finger.uploadImage(imageBuffer, sizeof(imageBuffer));
 	printf("uploadImage result: 0x%0x\n block count: %d\n", fp_result, finger.packetCount);
 
-	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, 0x01);
 
 	bmpHeader.bfType = 0x4d42; // magic number "BM"
 	bmpHeader.bfOffBits = sizeof(bmpHeader) + sizeof(bmpInfo) + sizeof(colorTab);
@@ -106,6 +112,8 @@ void getImage() {
 	}
 
 	imageFile.close();
+
+	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
 }
 
 int main()
@@ -124,7 +132,7 @@ int main()
 	// fingerprint detect action
 	wakeupFP.fall( []() {
 		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
-			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)0x04, (uint8_t)0);
+			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
 		queue.call_in(50ms, &getImage);
 	});
 
