@@ -50,7 +50,7 @@ void WSHandler::onMessage(const char* data, size_t size)
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-    clientConnection->setWSTimer(50);
+    clientConnection->setWSTimer(50ms);
     debug("%s: websocket opened\n", _clientConnection->getThreadname());
     _valX = 0;
     _timer.start();
@@ -60,7 +60,7 @@ void WSHandler::onTimer()
 {
     const char msg[] = "[%d,%6.3f,%6.3f,%6.3f,%6.3f,%6.3f,%6.3f]";
 
-    _valX = _timer.read_ms();
+    _valX = _timer.elapsed_time().count();
     int n = snprintf(_buffer, sizeof(_buffer), msg, _valX,
                                                     globalVars.adcValues[0], 
                                                     globalVars.adcValues[1], 
