@@ -8,7 +8,8 @@
             "mbed-trace.enable": 1,
             "stm32-emac.eth-phy-address" : 1,
             "mbed-http.http-buffer-size" : 1024,   
-            "platform.all-stats-enabled": true
+            "platform.all-stats-enabled": true,
+            "device_has_remove": ["SLEEP"]
         }
     }
 }
