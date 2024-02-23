@@ -236,7 +236,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
                     body += "]]";
             }
             
-            delete stats;
+            delete[] stats;
 
             builder.sendContent(200, body, "application/json; charset=utf-8");
         } else
