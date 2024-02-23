@@ -48,6 +48,7 @@ typedef struct tagBITMAPINFOHEADER {
 
 BITMAPFILEHEADER bmpHeader;
 BITMAPINFOHEADER bmpInfo;
+
 uint32_t colorTab[256];
 uint8_t imageBuffer[18432];
 uint8_t lineBuffer[192];
@@ -80,17 +81,22 @@ void getImage() {
 	bmpInfo.biPlanes = 1;
 	bmpInfo.biBitCount = 8;
 	bmpInfo.biCompression = 0;
-	bmpInfo.biSizeImage = 0; // 192 * 192 * 1;
-	bmpInfo.biXPelsPerMeter = 0; // 20000;		// 508 DPI
-	bmpInfo.biYPelsPerMeter = 0; // 20000;		// 508 DPI
+	bmpInfo.biSizeImage = 192 * 192 * 1;
+	bmpInfo.biXPelsPerMeter = 20000;		// 508 DPI
+	bmpInfo.biYPelsPerMeter = 20000;		// 508 DPI
 	bmpInfo.biClrUsed = 0;					// max. no. of colors
 	bmpInfo.biClrImportant = 0;				// all colors used
 
 
-	File imageFile(&fs, "R503-Image.bmp", O_RDWR | O_CREAT);
+	FILE *imageFile = fopen("/sda/R503-Image.bmp", "w+b");
+	if (imageFile == nullptr) {
+		finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
+		return;
+	}
+
 	// headers
-	imageFile.write(&bmpHeader, sizeof(bmpHeader));
-	imageFile.write(&bmpInfo, sizeof(bmpInfo));
+	fwrite(&bmpHeader, sizeof(bmpHeader), 1, imageFile);
+	fwrite(&bmpInfo, sizeof(bmpInfo), 1, imageFile);
 
 	// colortable
 	uint32_t colorItem = 0x0ff000000UL;
@@ -98,7 +104,7 @@ void getImage() {
 		colorTab[i] = colorItem;
 		colorItem += 0x00010101UL;
 	}
-	imageFile.write(colorTab, sizeof(colorTab));
+	fwrite(colorTab, sizeof(colorTab), 1, imageFile);
 
 	// image data 4 Bit -> 8 Bit
 	for(int y=0; y < 192; y++) {
@@ -108,10 +114,22 @@ void getImage() {
 			lineBuffer[2*x] = val1;
 			lineBuffer[2*x + 1] = val2;
 		}
-		imageFile.write(lineBuffer, sizeof(lineBuffer));
+		fwrite(lineBuffer, sizeof(lineBuffer), 1, imageFile);
 	}
 
-	imageFile.close();
+	fclose(imageFile);
+
+	File imageFile2(&fs, "test.bin", O_RDWR | O_CREAT);
+	imageFile2.write(colorTab, 2);
+	imageFile2.write(colorTab, sizeof(colorTab));
+	imageFile2.close();
+
+	FILE *imageFile3 = fopen("/sda/test2.bin", "w+b");
+	if (imageFile3 != nullptr) {
+		fwrite(colorTab, 2, 1, imageFile3);
+		fwrite(colorTab, sizeof(colorTab), 1, imageFile3);
+		fclose(imageFile3);
+	}
 
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
 }

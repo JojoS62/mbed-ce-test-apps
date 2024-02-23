@@ -12,7 +12,7 @@
         "string_view": "cpp",
         "span": "cpp"
     },
-    "cortex-debug.variableUseNaturalFormat": false,
+    "cortex-debug.variableUseNaturalFormat": true,
     "vsmqtt.brokerProfiles": [
         {
             "name": "sn-1",
