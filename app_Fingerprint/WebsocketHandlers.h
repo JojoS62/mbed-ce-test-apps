@@ -34,14 +34,12 @@ public:
     
     virtual void onMessage(const char* text);
     virtual void onMessage(const char* data, size_t size);
-    virtual void onTimer();
     virtual void onOpen(ClientConnection *clientConnection);
     virtual void onClose();
     virtual ~WSHandler() {};
 private:
     char _buffer[256];
     int _valX;
-    Timer _timer;
 };
 
 

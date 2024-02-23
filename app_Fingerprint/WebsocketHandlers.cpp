@@ -23,24 +23,16 @@
 #include "WebsocketHandlers.h"
 #include "ClientConnection.h"
 
-typedef struct 
-{
-    float adcValues[4];
-    float rotorPosActual;
-    float rotorPosSetpoint;
-    float position;
-} GlobalVars;
-
-static GlobalVars globalVars;
-
 void WSHandler::onMessage(const char* text)
 {
     float setpoint = 0.0f;
     int n = sscanf(text, "%f", &setpoint);
     if (n == 1) {
-        // rotor1.moveTo(setpoint, Rotor::direct);
-        globalVars.rotorPosSetpoint = setpoint;
     }
+
+    // if (_clientConnection)
+    //     _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
+
 }
 
 void WSHandler::onMessage(const char* data, size_t size)
@@ -50,29 +42,10 @@ void WSHandler::onMessage(const char* data, size_t size)
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-    clientConnection->setWSTimer(50ms);
     debug("%s: websocket opened\n", _clientConnection->getThreadname());
     _valX = 0;
-    _timer.start();
 }
  
-void WSHandler::onTimer()
-{
-    const char msg[] = "[%d,%6.3f,%6.3f,%6.3f,%6.3f,%6.3f,%6.3f]";
-
-    _valX = _timer.elapsed_time().count();
-    int n = snprintf(_buffer, sizeof(_buffer), msg, _valX,
-                                                    globalVars.adcValues[0], 
-                                                    globalVars.adcValues[1], 
-                                                    globalVars.adcValues[2], 
-                                                    globalVars.adcValues[3],
-                                                    globalVars.position,
-                                                    globalVars.rotorPosSetpoint);
-    
-    if (_clientConnection)
-        _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
-}
-
 void WSHandler::onClose()
 {
     debug("%s: websocket closed\n", _clientConnection->getThreadname());
