@@ -1,3 +1,5 @@
+// code for fingerprint server
+
 var ip = location.host;
 var ws_Url = "ws://" + ip + "/ws/";
 var intervalSendWatchdog;
