@@ -2,6 +2,7 @@
 #include "storage.h"
 
 Mutex mutexReqHandlerRoot;
+DigitalOut led1(LED1);
 
 // Requests come in here
 void request_handler(HttpParsedRequest* request, ClientConnection* clientConnection) {
@@ -73,7 +74,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     } else 
     if ((method == HTTP_POST) && (url == "/toggle")) {
         debug("%s toggle LED called\n\n", clientConnection->getThreadname());
-        //led1 = !led1;
+        led1 = !led1;
         print_dir(&fs, "/"); 
         builder.sendHeader(200);
     } else 
