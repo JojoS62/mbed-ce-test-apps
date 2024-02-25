@@ -129,7 +129,6 @@ void getImage() {
 	}
 
 	fclose(imageFile);
-	ThisThread::sleep_for(100ms);	// TODO: remove
 
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
 	server->wsTextAll("/ws/", "{ \"finger\" : \"image saved\" }");
