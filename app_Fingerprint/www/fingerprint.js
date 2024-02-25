@@ -14,11 +14,6 @@ function sendMessage(msg) {
   }
 }
 
-function onTestbutton() {
-  var pic = document.getElementById('imgFinger');
-  pic.src = "/apple-icon-114x114.png";
-}
-
 // Setup WebSocket connection and event handlers
 function setup() {  
     
