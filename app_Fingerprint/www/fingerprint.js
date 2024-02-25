@@ -12,6 +12,11 @@ function sendMessage(msg) {
   }
 }
 
+function onTestbutton() {
+  var pic = document.getElementById('imgFinger');
+  pic.src = "/apple-icon-114x114.png";
+}
+
 // Setup WebSocket connection and event handlers
 function setup() {  
     
@@ -22,7 +27,7 @@ function setup() {
   console.log("Connected");
   intervalSendWatchdog = setInterval(function(){ 
       sendMessage("{'hello'}"); 
-    }, 2000);
+    }, 10000);
   }
 
   // Listen for the close connection event
@@ -39,11 +44,16 @@ function setup() {
 
   // Listen for new messages arriving at the client
   ws.onmessage = function (e) {      
-    //var request = (e.data).split(",");
-    //val = e.data;
-    console.log(e.data);
-    var val = JSON.parse(e.data);
-    console.log(val);
+    const obj = JSON.parse(e.data);
+    console.log(obj);
+
+    if (obj.finger == "image saved") {
+      var pic = document.getElementById('imgFinger');
+      pic.src = "apple-icon-114x114.png";
+      document.getElementById('lblStatus').innerHTML = pic.src;
+    } else {
+      document.getElementById('lblStatus').innerHTML = obj.finger;
+    }
   }
 }
 

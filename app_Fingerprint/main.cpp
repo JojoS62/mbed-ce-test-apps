@@ -12,6 +12,7 @@
 
 Thread thread_events(osPriorityAboveNormal1, 4*1024UL, nullptr, "eventThread");
 ThreadTFTPServer  threadTFTPpServer; 
+HttpServer *server;
 
 EventQueue queue;
 InterruptIn user_button(BUTTON1);
@@ -55,20 +56,29 @@ uint8_t lineBuffer[192];
 
 
 void getImage() {
+	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE);
+	server->wsTextAll("/ws/", "{ \"finger\" : \"on sensor\" }");
+	ThisThread::sleep_for(50ms);
+
 	uint8_t fp_result = finger.getImage();
 	printf("genImage result: 0x%0x\n", fp_result);
 
 	if (fp_result != FINGERPRINT_OK) {
 		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
+		server->wsTextAll("/ws/", "{ \"finger\" : \"detect failed\" }");
+
 		queue.call_in(1s, &finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
 			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_RED, (uint8_t)0);
 		return;
 	}	
 
 	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_GREEN);
+	server->wsTextAll("/ws/", "{ \"finger\" : \"detected, uploading img\" }");
+
 
 	fp_result = finger.uploadImage(imageBuffer, sizeof(imageBuffer));
 	printf("uploadImage result: 0x%0x\n block count: %d\n", fp_result, finger.packetCount);
+	server->wsTextAll("/ws/", "{ \"finger\" : \"image read\" }");
 
 
 	bmpHeader.bfType = 0x4d42; // magic number "BM"
@@ -91,6 +101,7 @@ void getImage() {
 	FILE *imageFile = fopen("/sda/R503-Image.bmp", "w+b");
 	if (imageFile == nullptr) {
 		finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
+		server->wsTextAll("/ws/", "{ \"finger\" : \"image file open failed\" }");
 		return;
 	}
 
@@ -118,20 +129,10 @@ void getImage() {
 	}
 
 	fclose(imageFile);
-
-	File imageFile2(&fs, "test.bin", O_RDWR | O_CREAT);
-	imageFile2.write(colorTab, 2);
-	imageFile2.write(colorTab, sizeof(colorTab));
-	imageFile2.close();
-
-	FILE *imageFile3 = fopen("/sda/test2.bin", "w+b");
-	if (imageFile3 != nullptr) {
-		fwrite(colorTab, 2, 1, imageFile3);
-		fwrite(colorTab, sizeof(colorTab), 1, imageFile3);
-		fclose(imageFile3);
-	}
+	ThisThread::sleep_for(100ms);	// TODO: remove
 
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
+	server->wsTextAll("/ws/", "{ \"finger\" : \"image saved\" }");
 }
 
 int main()
@@ -140,31 +141,50 @@ int main()
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
-    // print_dir(&fs, "/");
-    // printf("\n"); 
+    print_dir(&fs, "/");
+    printf("\n"); 
 
 	// start a thread with queue dispatcher
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));
-
-
-	// fingerprint detect action
-	wakeupFP.fall( []() {
-		queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
-			(uint8_t)FINGERPRINT_LED_ON, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
-		queue.call_in(50ms, &getImage);
-	});
-
-
-	// fingerprint release action
-	// wakeupFP.rise( []() {
-	// 	// queue.call(&finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
-	// 	// 	(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_BLUE, (uint8_t)0);
-	// });
 
 	// add a cyclic function call to queue
 	queue.call_every(200ms, []() {
 		led2 = !led2;
 	});
+
+    
+#ifdef USE_HTTPSERVER	
+	nsapi_error_t connect_status =  network_init();
+	if (connect_status != NSAPI_ERROR_OK) {
+		while(1) {
+			led2 = !led2;
+			ThisThread::sleep_for(50ms);
+		}
+	}
+
+    server = new HttpServer(network, 5, 4);               // max 3 threads, 2 websockets
+
+    server->addStandardHeader("Server", "JojoS_Mbed_Server");
+    server->addStandardHeader("DNT", "1");
+
+    server->setHTTPHandler("/", &request_handler);
+    server->setHTTPHandler("/stats/", &request_handler_getStatus);
+    
+    server->setWSHandler("/ws/", WSHandler::createHandler);
+
+    nsapi_error_t res = server->start(8080);
+
+    if (res == NSAPI_ERROR_OK) {
+        SocketAddress socketAddress;
+        network->get_ip_address(&socketAddress);
+        printf("Server is listening at http://%s:8080\n", socketAddress.get_ip_address());
+    }
+    else {
+        printf("Server could not be started... %d\n", res);
+    }
+
+    threadTFTPpServer.start(network); 
+#endif 
 
 	finger.begin(57600);
 	finger.getParameters();
@@ -188,67 +208,19 @@ int main()
 	printf("Database size: %d\n", pi.database_size);
 	printf("Template size: %d\n", pi.template_size);
 	printf("Sensor Type: %.8s\n", pi.sensor_type);
-	printf("Sensor width/height : %d %d\n", pi.sensor_width, pi.sensor_height);
+	printf("Sensor width/height : %d x %d\n\n", pi.sensor_width, pi.sensor_height);
 
-    
-#ifdef USE_HTTPSERVER	
-	nsapi_error_t connect_status =  network_init();
-	if (connect_status != NSAPI_ERROR_OK) {
-		while(1) {
-			led2 = !led2;
-			ThisThread::sleep_for(50ms);
-		}
-	}
-
-    HttpServer server(network, 3, 2);               // max 3 threads, 2 websockets
-
-    server.addStandardHeader("Server", "JojoS_Mbed_Server");
-    server.addStandardHeader("DNT", "1");
-
-    server.setHTTPHandler("/", &request_handler);
-    server.setHTTPHandler("/stats/", &request_handler_getStatus);
-    
-    server.setWSHandler("/ws/", WSHandler::createHandler);
-
-    nsapi_error_t res = server.start(8080);
-
-    if (res == NSAPI_ERROR_OK) {
-        SocketAddress socketAddress;
-        network->get_ip_address(&socketAddress);
-        printf("Server is listening at http://%s:8080\n", socketAddress.get_ip_address());
-    }
-    else {
-        printf("Server could not be started... %d\n", res);
-    }
-
-    threadTFTPpServer.start(network); 
-#endif 
+	// fingerprint detect action
+	wakeupFP.fall( []() {
+		queue.call(&getImage);
+	});
 
 	// main loop, print message with counter
 	int counter = 0;
 	while(true) 
 	{
 		counter++;
-
-		// // LED fully on
-		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
-		// ThisThread::sleep_for(250ms);
-		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE);
-		// ThisThread::sleep_for(250ms);
-		// finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_PURPLE);
-		// ThisThread::sleep_for(250ms);
-
-		// // flash red LED
-		// finger.LEDcontrol(FINGERPRINT_LED_FLASHING, 25, FINGERPRINT_LED_RED, 10);
-		// ThisThread::sleep_for(2s);
-		// // Breathe blue LED till we say to stop
-		// finger.LEDcontrol(FINGERPRINT_LED_BREATHING, 100, FINGERPRINT_LED_BLUE);
-		// ThisThread::sleep_for(3s);
-		// finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_ON, 200, FINGERPRINT_LED_PURPLE);
-		// ThisThread::sleep_for(2s);
-		// finger.LEDcontrol(FINGERPRINT_LED_GRADUAL_OFF, 200, FINGERPRINT_LED_PURPLE);
-		ThisThread::sleep_for(2s);
-
+		ThisThread::sleep_for(50ms);
 	}
 
 	return 0;

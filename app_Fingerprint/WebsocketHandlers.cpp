@@ -25,15 +25,7 @@
 
 void WSHandler::onMessage(const char* text)
 {
-    printf("ws onMessage: '%s'\n", text);
-    float setpoint = 0.0f;
-    int n = sscanf(text, "%f", &setpoint);
-    if (n == 1) {
-    }
-
-    // if (_clientConnection)
-    //     _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
-
+    // printf("ws onMessage: '%s'\n", text);
 }
 
 void WSHandler::onMessage(const char* data, size_t size)
