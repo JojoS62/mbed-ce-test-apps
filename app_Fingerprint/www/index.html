@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script>src="fingerprint.js"</script>
   <title>MBed Webserver</title>
   <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="apple-icon-60x60.png">
@@ -38,20 +37,14 @@
         margin-bottom: 10px;
       }
   </style>
-  <script>
-    function onTestbutton() {
-      console.log("onbutton");
-      const pic = document.getElementById('imgFinger');
-      pic.src = "apple-icon-114x114.png";
-    }
-  </script>
+  <script src="fingerprint.js"></script>
 </head>
 <body>
   <h1>Test Fingerprint Sensor R503</h1>
-  <div id = "main_links"><a href="/status.html">System</a><br></div><br>
-  <div id = "imgFinger"><img src="R503-Image.bmp"></div><br>
+  <div><a href="/status.html">System</a><br></div><br>
+  <div><img  id = "imgFinger" src="R503-Image.bmp"></div><br>
   <div><label id = "lblStatus">***Status***</label></div><br>
-  <div><button type="button" onClick="onTestbutton()">Reload Image</button></div>
+  <div><button type="button" onClick=onTestbutton()>Reload Image</button></div>
 </body>
 
 </html>

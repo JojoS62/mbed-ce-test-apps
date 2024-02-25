@@ -14,6 +14,12 @@ function sendMessage(msg) {
   }
 }
 
+function onTestbutton() {
+  console.log("onbutton");
+  const pic = document.getElementById('imgFinger');
+  pic.src = "apple-icon-114x114.png";
+}
+
 // Setup WebSocket connection and event handlers
 function setup() {  
     
@@ -46,7 +52,7 @@ function setup() {
 
     if (obj.finger == "image saved") {
       var pic = document.getElementById('imgFinger');
-      pic.src = "apple-icon-114x114.png";
+      pic.src = "R503-Image.bmp?t=" + new Date().getTime();
       document.getElementById('lblStatus').innerHTML = pic.src;
     } else {
       document.getElementById('lblStatus').innerHTML = obj.finger;
