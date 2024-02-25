@@ -13,8 +13,8 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
 
     http_method method = request->get_method();
     string url = request->get_url();
-
-    printf("%s get_method: %d url: '%s'\n", clientConnection->getThreadname(), method, url.c_str() ) ;
+    
+    printf("%s get_method: %d url: '%s'\n", clientConnection->getThreadname(), method, url.c_str());
 
     if ((method == HTTP_GET) && (url == "/led")) {
         string body = 
@@ -70,7 +70,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
         builder.sendHeaderAndFile(&fs, "/index.html");
     } else 
     if (method == HTTP_GET) {
-        builder.sendHeaderAndFile(&fs, url);
+        builder.sendHeaderAndFile(&fs, request->get_filename().c_str());
     } else 
     if ((method == HTTP_POST) && (url == "/toggle")) {
         debug("%s toggle LED called\n\n", clientConnection->getThreadname());
