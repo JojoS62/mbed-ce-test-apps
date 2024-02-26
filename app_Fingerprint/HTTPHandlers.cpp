@@ -9,14 +9,21 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     mutexReqHandlerRoot.lock();
     HttpResponseBuilder builder(clientConnection);
 
-    builder.headers["Connection"] = "close";
+    builder.headers["Connection"] = "keep-alive";
 
     http_method method = request->get_method();
     string url = request->get_url();
+    string filename = request->get_filename();
+    string path = request->get_path();
     
-    printf("%s get_method: %d url: '%s'\n", clientConnection->getThreadname(), method, url.c_str());
+    debug("%s get_method: %d url: '%s'  path: '%s' filename: '%s'\n", 
+        clientConnection->getThreadname(), 
+        method, 
+        url.c_str(),
+        path.c_str(),
+        filename.c_str());
 
-    if ((method == HTTP_GET) && (url == "/led")) {
+    if ((method == HTTP_GET) && (path == "/led")) {
         string body = 
             "<html><head><title>Hello from mbed</title></head>"
             "<body>"
@@ -28,7 +35,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
             "</body></html>";
         builder.sendContent(200, body);
     } else 
-    if ((method == HTTP_GET) && (url == "/format")) {
+    if ((method == HTTP_GET) && (path == "/format")) {
         string body = 
             "<html><head><title>Hello from mbed</title></head>"
             "<body>"
@@ -41,7 +48,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
 
         builder.sendContent(200, body);
     } else 
-    if ((method == HTTP_GET) && (url == "/test.svg")) {
+    if ((method == HTTP_GET) && (path == "/test.svg")) {
         builder.headers["Content-Type"] = "image/svg+xml";
         string out;
         out.reserve(4096);
@@ -60,25 +67,19 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
         out += "</g>\n</svg>\n";
         builder.sendContent(200, out, "image/svg+xml");
     } else 
-    if ((method == HTTP_GET) && (url == "/favicon.ico")) {
-        builder.sendHeader(404);
-    } else 
-    if ((method == HTTP_GET) && (url == "favicon.ico")) {
-        builder.sendHeader(404);
-    } else 
-    if ((method == HTTP_GET) && (url == "/")) {
+    if ((method == HTTP_GET) && (path == "/")) {
         builder.sendHeaderAndFile(&fs, "/index.html");
     } else 
     if (method == HTTP_GET) {
-        builder.sendHeaderAndFile(&fs, request->get_filename().c_str());
+        builder.sendHeaderAndFile(&fs, filename.c_str());
     } else 
-    if ((method == HTTP_POST) && (url == "/toggle")) {
+    if ((method == HTTP_POST) && (path == "/toggle")) {
         debug("%s toggle LED called\n\n", clientConnection->getThreadname());
         led1 = !led1;
         print_dir(&fs, "/"); 
         builder.sendHeader(200);
     } else 
-    if ((method == HTTP_POST) && (url == "/formatFlash")) {
+    if ((method == HTTP_POST) && (path == "/formatFlash")) {
         debug("%s toggle LED called\n\n", clientConnection->getThreadname());
         // formatSPIFlash(&lfs); 
         // print_SPIF_info();
@@ -98,7 +99,7 @@ const char* Compilername[] = {
     "IAR"
 };
 
-string getCPUIDame(uint32_t cpu_id) 
+string getCPUIDname(uint32_t cpu_id) 
 {
     uint16_t rev = cpu_id & 0xf;
     cpu_id = (cpu_id >> 4) & 0xfff;
@@ -206,7 +207,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             body += "{\"MBed OS Version\": ";
             body += "\"" + to_string(MBED_MAJOR_VERSION) + "." + to_string(MBED_MINOR_VERSION) + "." + to_string(MBED_PATCH_VERSION) + "\"";
             body += ", \"CPU Id\": ";
-            body += "\"" + getCPUIDame(stats.cpu_id) + "\"";
+            body += "\"" + getCPUIDname(stats.cpu_id) + "\"";
             if ((stats.compiler_id > 1) && (stats.compiler_id < 3))
             body += ", \"Compiler Id\": \"";
             body += Compilername[stats.compiler_id - 1];

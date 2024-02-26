@@ -57,7 +57,7 @@ uint8_t lineBuffer[192];
 
 void getImage() {
 	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE);
-	server->wsTextAll("/ws/", "{ \"finger\" : \"on sensor\" }");
+	server->wsSendTextAll("/ws/", "{ \"finger\" : \"on sensor\" }");
 	ThisThread::sleep_for(50ms);
 
 	uint8_t fp_result = finger.getImage();
@@ -65,7 +65,7 @@ void getImage() {
 
 	if (fp_result != FINGERPRINT_OK) {
 		finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
-		server->wsTextAll("/ws/", "{ \"finger\" : \"detect failed\" }");
+		server->wsSendTextAll("/ws/", "{ \"finger\" : \"detect failed\" }");
 
 		queue.call_in(1s, &finger, static_cast<uint8_t(Adafruit_Fingerprint::*)(uint8_t, uint8_t, uint8_t, uint8_t)>(&Adafruit_Fingerprint::LEDcontrol), 
 			(uint8_t)FINGERPRINT_LED_OFF, (uint8_t)0, (uint8_t)FINGERPRINT_LED_RED, (uint8_t)0);
@@ -73,12 +73,12 @@ void getImage() {
 	}	
 
 	finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_GREEN);
-	server->wsTextAll("/ws/", "{ \"finger\" : \"detected, uploading img\" }");
+	server->wsSendTextAll("/ws/", "{ \"finger\" : \"detected, uploading img\" }");
 
 
 	fp_result = finger.uploadImage(imageBuffer, sizeof(imageBuffer));
 	printf("uploadImage result: 0x%0x\n block count: %d\n", fp_result, finger.packetCount);
-	server->wsTextAll("/ws/", "{ \"finger\" : \"image read\" }");
+	server->wsSendTextAll("/ws/", "{ \"finger\" : \"image read\" }");
 
 
 	bmpHeader.bfType = 0x4d42; // magic number "BM"
@@ -101,7 +101,7 @@ void getImage() {
 	FILE *imageFile = fopen("/sda/R503-Image.bmp", "w+b");
 	if (imageFile == nullptr) {
 		finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
-		server->wsTextAll("/ws/", "{ \"finger\" : \"image file open failed\" }");
+		server->wsSendTextAll("/ws/", "{ \"finger\" : \"image file open failed\" }");
 		return;
 	}
 
@@ -131,7 +131,7 @@ void getImage() {
 	fclose(imageFile);
 
 	finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_GREEN);
-	server->wsTextAll("/ws/", "{ \"finger\" : \"image saved\" }");
+	server->wsSendTextAll("/ws/", "{ \"finger\" : \"image saved\" }");
 }
 
 int main()
@@ -140,8 +140,8 @@ int main()
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
-    print_dir(&fs, "/");
-    printf("\n"); 
+    // print_dir(&fs, "/");
+    // printf("\n"); 
 
 	// start a thread with queue dispatcher
 	thread_events.start(callback(&queue, &EventQueue::dispatch_forever));

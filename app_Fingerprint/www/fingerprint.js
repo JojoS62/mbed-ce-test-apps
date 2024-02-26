@@ -50,13 +50,18 @@ function setup() {
     const obj = JSON.parse(e.data);
     console.log(obj);
 
+    document.getElementById('lblStatus').innerHTML = obj.finger;
+
+    if (obj.finger == "detect failed"){
+      document.getElementById('lblStatus').style.backgroundColor = "red";
+    } else {
+      document.getElementById('lblStatus').style.backgroundColor = "limegreen";
+    }
+
     if (obj.finger == "image saved") {
       var pic = document.getElementById('imgFinger');
       pic.src = "R503-Image.bmp?t=" + new Date().getTime();
-      document.getElementById('lblStatus').innerHTML = pic.src;
-    } else {
-      document.getElementById('lblStatus').innerHTML = obj.finger;
-    }
+    } 
   }
 }
 
