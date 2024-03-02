@@ -11,6 +11,10 @@ canvas {
   margin: 0em;
 }
 
+p {
+  border: 2px solid powderblue;
+}
+
 a { 
     color: rgb(15, 15, 15); 
 }
