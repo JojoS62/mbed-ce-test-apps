@@ -13,7 +13,6 @@ canvas {
 
 a { 
     color: rgb(15, 15, 15); 
-    font-size: x-large;
 }
 
 #main_links {
@@ -23,7 +22,7 @@ a {
 
 h1 {
   font-size: 1.8rem;
-  color: rgb(230, 10, 21);
+  color: rgb(69, 10, 230);
 }
 
 button {
