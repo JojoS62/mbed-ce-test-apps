@@ -1,0 +1,51 @@
+body {
+  background-color: rgb(213, 219, 215);
+}
+
+section {
+  text-align: center;
+}
+
+canvas {
+  padding: 10em;
+  margin: 0em;
+}
+
+a { 
+    color: rgb(15, 15, 15); 
+    font-size: x-large;
+}
+
+#main_links {
+  font-size: x-large;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 1.8rem;
+  color: rgb(230, 10, 21);
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 20px;
+  text-align: center;
+  outline: none;
+  color: #fff;
+  background-color: #158181;
+  border: none;
+  border-radius: 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+label {
+  padding: 10px 20px;
+  font-size: 20px;
+  color: #050505;
+  background-color: lightgreen;
+}
