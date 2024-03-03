@@ -16,4 +16,4 @@ target_link_libraries(Fingerprint
     mbed-tftpd 
     )
 
-mbed_set_post_build(Fingerprint)
+mbed_set_post_build(Fingerprint F407.ld)
