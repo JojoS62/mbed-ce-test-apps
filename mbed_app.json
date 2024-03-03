@@ -4,10 +4,10 @@
             "target.printf_lib": "std",              
             "platform.stdio-baud-rate": 115200,
             "mbed-http.http-buffer-size" : 1024,
-            "lwip.socket-max": 14,
-            "lwip.tcp-socket-max": 12,                 
+            "lwip.socket-max": 16,
+            "lwip.tcp-socket-max": 14,                 
             "mbed-trace.enable": 1,
-            "platform.cpu-stats-enabled": true,
+            "platform.cpu-stats-enabled": false,
             "platform.all-stats-enabled": true
         },
         "JZ_F407VE": {
