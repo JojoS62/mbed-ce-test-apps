@@ -167,8 +167,20 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
     string body;
     body.reserve(1024);
 
-    if (request->get_method() == HTTP_GET) {
-        if (request->get_filename() == "mem") {
+    // builder.headers["Connection"] = "close";
+
+    http_method method = request->get_method();
+    string url = request->get_url();
+    string filename = request->get_filename();
+
+    debug("%s get_method: %d url: '%s'  filename: '%s'\n", 
+        clientConnection->getThreadname(), 
+        method, 
+        url.c_str(),
+        filename.c_str());
+
+    if (method == HTTP_GET) {
+        if (filename == "mem") {
             mbed_stats_heap_t heap_info;
             mbed_stats_heap_get( &heap_info );
 
@@ -184,7 +196,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendContent(200, body, "application/json; charset=utf-8");
         } else
-        if (request->get_filename() == "cpu") {
+        if (filename == "cpu") {
             mbed_stats_cpu_t stats;
             mbed_stats_cpu_get(&stats);
 
@@ -200,7 +212,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendContent(200, body, "application/json; charset=utf-8");
         } else
-        if (request->get_filename() == "sysinfo") {
+        if (filename == "sysinfo") {
             mbed_stats_sys_t stats;
             mbed_stats_sys_get(&stats);
 
@@ -217,7 +229,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendContent(200, body, "application/json; charset=utf-8");
         } else
-        if (request->get_filename() == "threads") {
+        if (filename == "threads") {
             const uint MAX_THREAD_STATS = 32;
             mbed_stats_thread_t *stats = new mbed_stats_thread_t[MAX_THREAD_STATS];
             int count = mbed_stats_thread_get_each(stats, MAX_THREAD_STATS);
@@ -242,7 +254,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendContent(200, body, "application/json; charset=utf-8");
         } else
-        if (request->get_filename() == "test") {
+        if (filename == "test") {
 
             body += "{\"test\": 42}";
 
