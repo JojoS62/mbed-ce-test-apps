@@ -7,6 +7,7 @@
             "lwip.socket-max": 14,
             "lwip.tcp-socket-max": 12,                 
             "mbed-trace.enable": 1,
+            "platform.cpu-stats-enabled": true,
             "platform.all-stats-enabled": true
         },
         "JZ_F407VE": {
