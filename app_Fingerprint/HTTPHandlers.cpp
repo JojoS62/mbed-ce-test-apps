@@ -9,8 +9,6 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     mutexReqHandlerRoot.lock();
     HttpResponseBuilder builder(clientConnection);
 
-    builder.headers["Connection"] = "keep-alive";
-
     http_method method = request->get_method();
     string url = request->get_url();
     string filename = request->get_filename();
@@ -166,8 +164,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
     string body;
     body.reserve(1024);
-
-    // builder.headers["Connection"] = "close";
 
     http_method method = request->get_method();
     string url = request->get_url();
