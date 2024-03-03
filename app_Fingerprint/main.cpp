@@ -161,7 +161,7 @@ int main()
 		}
 	}
 
-    server = new HttpServer(network, 5, 4);               // max 3 threads, 2 websockets
+    server = new HttpServer(network, 6, 2);               // max 3 threads, 2 websockets
 
     server->addStandardHeader("Server", "JojoS_Mbed_Server");
     server->addStandardHeader("DNT", "1");
